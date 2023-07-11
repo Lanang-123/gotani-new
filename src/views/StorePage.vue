@@ -1,17 +1,17 @@
 <template>
-    <div>
-        <div class="font-poppins mt-20">
+    <div class="mb-16">
+        <div class="font-poppins mt-14">
             <div class="relative sm:h-96 mt-16">
-                <img class="object-cover w-full h-56 sm:h-96 parallax" src="../assets/images/pcard.jpg" alt="" />
+                <img class="object-cover w-full h-56 sm:h-96 parallax" src="../assets/images/store.jfif" alt="" />
                 <div class="absolute inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center">
                     <div class="max-w-full">
-                        <h1 class="text-3xl sm:text-6xl font-bold text-amber-500 text-center">Temukan Franchise Impianmu !</h1>
-                        <form class="max-w-full px-4 mt-4 flex flex-col items-center">
+                        <h1 class="text-3xl sm:text-6xl font-bold text-[#06B3B9] text-center">Temukan Product Menarik Untukmu !</h1>
+                        <form class="max-w-full px-4 mt-4 flex flex-col items-center" @submit.prevent="performSearch">
                             <div class="relative">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="absolute top-0 bottom-0 w-6 h-6 my-auto text-gray-400 left-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                 </svg>
-                                <input type="text" placeholder="Search" class="w-full  py-3 pl-12 pr-4 text-gray-500 border rounded-3xl outline-none bg-gray-50 focus:bg-white focus:border-amber-600" />
+                                <input type="text" placeholder="Search" class="w-full  py-3 pl-12 pr-4 text-gray-500 border rounded-3xl outline-none bg-gray-50 focus:bg-white " v-model="search"/>
                             </div>
                         </form>
                     </div>
@@ -25,8 +25,11 @@
               <button class="carousel-button prev" @click="prevSlide"><i class="fas fa-chevron-left"></i></button>
               <div class="carousel-content">
                 <ul class="category-list" :style="{ transform: `translateX(-${activeIndex * slideWidth}px)` }">
+                  <li :key="0" :class="{ active: activeIndex === -1 }">
+                    <button class="btn btn-wide bg-[#06B3B9] text-white" @click="selectCategory(-1)">All</button>
+                  </li>
                   <li v-for="(category, index) in categories" :key="index" :class="{ active: index === activeIndex }">
-                    <button class="btn btn-wide bg-amber-500 text-zinc-800" @click="selectCategory(index)">{{ category.nama_category }}</button>
+                    <button class="btn btn-wide bg-[#06B3B9] text-white" @click="selectCategory(index)">{{ category.nama_category }}</button>
                   </li>
                 </ul>
               </div>
@@ -45,9 +48,21 @@
                                 <h1 class="text-xl font-bold text-gray-800 uppercase dark:text-white">{{ product.title }}</h1>
                                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400 line-clamp-3">{{ product.description }}</p>
                             </div>
-                            <div class="flex items-center justify-between px-4 py-2 bg-zinc-800">
-                                <h1 class="text-lg font-bold text-white">{{ formatRupiah(product.price) }}</h1>
-                                <button class="px-2 py-1 text-xs font-semibold text-zinc-800 uppercase transition-colors duration-300 transform bg-amber-500 rounded hover:bg-gray-200 focus:bg-gray-400 focus:outline-none">Add to cart</button>
+                            <div class="flex items-center justify-between px-4 py-2 bg-[#245953]">
+                                <h1 class="md:text-md text-lg font-bold text-white">{{ formatRupiah(product.price) }}</h1>
+                                  <div class="flex justify-center items-center">
+                                      <svg
+                                          class="h-5 w-5 text-yellow-400"
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          viewBox="0 0 20 20"
+                                          fill="currentColor"
+                                          >
+                                          <path
+                                              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
+                                          />
+                                          </svg>
+                                      <h1 class="md:text-md text-lg font-semibold text-white ml-1">{{ product.rating }}</h1>
+                                  </div>
                             </div>
                             </div>
                         </RouterLink>
@@ -65,7 +80,9 @@
     import axios from 'axios';
 
     const activeIndex = ref(0);
-    const slideWidth = ref(178);
+    const search = ref('');
+    const activeCategory = ref(0);
+    const slideWidth = ref(270);
     const categories = ref(null);
     const formattedAmount = ref(null)
     const products = ref(null)
@@ -80,23 +97,47 @@
         .catch((err)=>console.log(err))
     }
 
-    const fetchDataProduct = () => {
-        axios.get(urlProduct)
-        .then((response)=>{
-            products.value=response.data.data;
-        }).catch((err)=>{
-            console.log(err);
-        })
+    const searchDataProduct = (keyword) => { 
+      if(keyword.length) {
+        axios.get(urlProduct + 'name/' + keyword)
+        .then((res) => products.value=res.data.data)
+        .catch((err) => logger.error(err))
+      }else {
+        fetchDataProduct()
+      }
+    }
+
+    const fetchDataProduct = (index) => {
+        if(index) {
+          axios.get(urlProduct + 'category/' + index)
+          .then((res) =>  products.value=res.data.data)
+          .catch((err)=>console.log(err));
+        }else if(index == 0 || !index) {
+          axios.get(urlProduct)
+          .then((response)=>{
+              products.value=response.data.data;
+          }).catch((err)=>{
+              console.log(err);
+          })
+        }
+    }
+
+    const performSearch = () => {
+      searchDataProduct(search.value);
     }
 
     onMounted(()=> {
+        window.scrollTo(0, 0);
         fetchDataCategory();
         fetchDataProduct();
     });
 
     const selectCategory = (index) => {
-        console.log('Kategori dipilih:', categories.value[index]);
+        activeCategory.value = index === -1 ? 0 : index + 1;
     };
+
+    watch(activeCategory,(newValue) => fetchDataProduct(newValue));
+    watch(search,(value) => searchDataProduct(value));
 
     const prevSlide = () => {
       if (activeIndex.value > 0) {
@@ -146,7 +187,7 @@
     outline: none;
     cursor: pointer;
     font-size: 20px;
-    color: orange;
+    color: #06B3B9;
   }
   
   .carousel-button.prev {
@@ -176,7 +217,7 @@
   
   .category-button {
     padding: 10px 20px;
-    background-color: #ccc;
+    background-color: #245953;
     border: none;
     border-radius: 5px;
     cursor: pointer;

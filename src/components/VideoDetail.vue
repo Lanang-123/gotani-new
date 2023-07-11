@@ -50,6 +50,8 @@
     const category = ref(null);
 
     onMounted(()=> {
+      window.scrollTo(0, 0);
+
       axios.get(urlId)
         .then((res)=>{
           education.value = res.data.data;

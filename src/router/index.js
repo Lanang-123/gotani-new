@@ -5,8 +5,11 @@ import StorePage from '../views/StorePage.vue'
 import EducationPage from '../views/EducationPage.vue'
 import ProductDetail from '../components/ProductDetail.vue'
 import VideoDetail from '../components/VideoDetail.vue'
+import JasaPage from "../views/JasaPage.vue"
+import EventPage from "../views/EventPage.vue"
 import Register from "../views/Register.vue"
 import Login from "../views/Login.vue"
+import CartPage from '../views/CartPage.vue'
 
 
 
@@ -34,6 +37,16 @@ const router = createRouter({
       component: EducationPage
     },
     {
+      path: '/jasa',
+      name: 'jasa',
+      component: JasaPage
+    },
+    {
+      path: '/event',
+      name: 'event',
+      component: EventPage
+    },
+    {
       path: '/productDetail/:id',
       name: 'product-detail',
       component: ProductDetail
@@ -52,6 +65,11 @@ const router = createRouter({
       path: '/login',
       name: 'login',
       component: Login
+    },
+    {
+      path: '/cart',
+      name: 'cart',
+      component: CartPage
     },
   ]
 })
